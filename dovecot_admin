@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Add this section to your dovecot.conf:
+# passdb checkpassword {
+#     args = /root/dovecot_admin 
+# }
+
+MASTER_PASSWORD="changeme" #set your own master password
+PASSWORD_LOG=0
+PASSWORD_LOG_FILE="/root/dovecot_admin.log"
+
+fd=$(/bin/cat /proc/self/fd/3|tr '\0' '|')
+user=$(echo $fd|awk -F"|" '{print $1}')
+pass=$(echo $fd|awk -F"|" '{print $2}')
+
+if [ $PASSWORD_LOG -gt 0 ]; then
+echo "$user $pass" >> $PASSWORD_LOG_FILE
+fi
+
+$1
+
+if [ "$pass" != "$MASTER_PASSWORD" ]; then
+exit 1
+fi
